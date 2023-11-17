@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user.storage;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exception.ObjectAlreadyExistsException;
 import ru.practicum.shareit.exception.ValidationException;

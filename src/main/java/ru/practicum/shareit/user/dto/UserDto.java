@@ -3,10 +3,7 @@ package ru.practicum.shareit.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.UniqueElements;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @Data
