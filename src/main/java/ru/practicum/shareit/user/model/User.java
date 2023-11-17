@@ -1,32 +1,29 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.user.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+import org.hibernate.validator.constraints.UniqueElements;
 
-import java.time.LocalDate;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Booking {
+public class User {
 
     private Long id;
-    private LocalDate start;
-    private LocalDate end;
-    private Item item;
-    private User booker;
-    private Status status;
+    private String name;
+    private String email;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Booking booking = (Booking) o;
-        return Objects.equals(id, booking.id);
+        User user = (User) o;
+        return Objects.equals(id, user.id);
     }
 
     @Override
