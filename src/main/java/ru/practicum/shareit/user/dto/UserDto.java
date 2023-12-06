@@ -1,32 +1,31 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Booking {
+public class UserDto {
 
     private Long id;
-    private LocalDate start;
-    private LocalDate end;
-    private Item item;
-    private User booker;
-    private Status status;
+    private String name;
+    private String email;
+
+    public UserDto(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Booking booking = (Booking) o;
-        return Objects.equals(id, booking.id);
+        UserDto userDto = (UserDto) o;
+        return Objects.equals(id, userDto.id);
     }
 
     @Override
