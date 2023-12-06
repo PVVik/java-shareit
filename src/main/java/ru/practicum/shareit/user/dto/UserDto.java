@@ -3,33 +3,20 @@ package ru.practicum.shareit.user.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.util.Create;
+import ru.practicum.shareit.util.Update;
 
-import java.util.Objects;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
-
     private Long id;
+    @NotBlank(message = "Поле имени не должно быть пустым", groups = {Create.class})
     private String name;
+    @Email(message = "Невалидный почтовый ящик", groups = {Create.class, Update.class})
+    @NotBlank(message = "Поле почтового ящика не должно быть пустым", groups = {Create.class})
     private String email;
-
-    public UserDto(String name, String email) {
-        this.name = name;
-        this.email = email;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        UserDto userDto = (UserDto) o;
-        return Objects.equals(id, userDto.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
 }
