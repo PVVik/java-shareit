@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(Long id, UserDto user) {
         return repository.findById(id)
-                .map(thisUser-> {
+                .map(thisUser -> {
                     if (user.getEmail() != null && !user.getEmail().isBlank()) {
                         thisUser.setEmail(user.getEmail());
                     }
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
                     return thisUser;
                 })
                 .map(mapper::toUserDto)
-                .orElseThrow(() ->new ObjectNotFoundException("Пользователь не найден"));
+                .orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден"));
     }
 
     @Override
