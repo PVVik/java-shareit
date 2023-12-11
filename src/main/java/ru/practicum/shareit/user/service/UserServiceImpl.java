@@ -29,14 +29,18 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserDto update(Long id, UserDto user) {
-        User thisUser = repository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Пользователь не найден"));
-        if (user.getEmail() != null && !user.getEmail().isBlank()) {
-            thisUser.setEmail(user.getEmail());
-        }
-        if (user.getName() != null && !user.getName().isBlank()) {
-            thisUser.setName(user.getName());
-        }
-        return mapper.toUserDto(thisUser);
+        return repository.findById(id)
+                .map(thisUser-> {
+                    if (user.getEmail() != null && !user.getEmail().isBlank()) {
+                        thisUser.setEmail(user.getEmail());
+                    }
+                    if (user.getName() != null && !user.getName().isBlank()) {
+                        thisUser.setName(user.getName());
+                    }
+                    return thisUser;
+                })
+                .map(mapper::toUserDto)
+                .orElseThrow(() ->new ObjectNotFoundException("Пользователь не найден"));
     }
 
     @Override

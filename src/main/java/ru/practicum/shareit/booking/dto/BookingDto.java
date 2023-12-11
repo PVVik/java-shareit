@@ -18,15 +18,15 @@ public class BookingDto {
     private Booker booker;
     private Item item;
 
-    @Data
     @AllArgsConstructor
+    @Data
     public static class Booker {
         private Long id;
         private String name;
     }
 
-    @Data
     @AllArgsConstructor
+    @Data
     public static class Item {
         private Long id;
         private String name;
