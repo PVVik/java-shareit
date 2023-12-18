@@ -26,7 +26,7 @@ public class BookingController {
     public BookingDto updateStatus(@PathVariable Long bookingId,
                                    @RequestHeader("X-Sharer-User-Id") Long userId,
                                    @RequestParam Boolean approved) {
-        return bookingService.updateStatus(bookingId, userId, approved);
+        return bookingService.updateStatus(userId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
@@ -36,13 +36,17 @@ public class BookingController {
 
     @GetMapping("/owner")
     public List<BookingDto> getBookingsByOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingsByOwner(userId, State.valueOf(state));
+                                               @RequestParam(name = "state", defaultValue = "ALL") String state,
+                                               @RequestParam(defaultValue = "0") Integer from,
+                                               @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return bookingService.getBookingsByOwner(userId, State.valueOf(state), from, size);
     }
 
     @GetMapping
     public List<BookingDto> getBookingsByUser(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                              @RequestParam(defaultValue = "ALL") String state) {
-        return bookingService.getBookingsByUser(userId, State.valueOf(state));
+                                              @RequestParam(name = "state", defaultValue = "ALL") String state,
+                                              @RequestParam(defaultValue = "0") Integer from,
+                                              @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return bookingService.getBookingsByUser(userId, State.valueOf(state), from, size);
     }
 }

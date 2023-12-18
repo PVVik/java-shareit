@@ -33,6 +33,11 @@ public class Item {
         this.available = available;
     }
 
+    public Item(Long id, String name, String description, Boolean available, Long requestId) {
+        this(id, name, description, available);
+        this.requestId = requestId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -3,8 +3,8 @@ package ru.practicum.shareit.booking.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.enums.Status;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
@@ -33,8 +33,7 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public Booking(Long id, LocalDateTime start, LocalDateTime end) {
-        this.id = id;
+    public Booking(LocalDateTime start, LocalDateTime end) {
         this.start = start;
         this.end = end;
     }
