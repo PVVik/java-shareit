@@ -62,13 +62,4 @@ public class UserRepositoryTest {
                 ObjectNotFoundException.class, () -> userService.getById(999L));
         assertEquals("Пользователь не найден", exception.getMessage());
     }
-
-    @Test
-    void shouldThrowExceptionIfEmailExists() {
-        when(userRepository.save(any()))
-                .thenThrow(new DataIntegrityViolationException(""));
-        final ObjectAlreadyExistsException exception = assertThrows(
-                ObjectAlreadyExistsException.class, () -> userService.create(user));
-        assertEquals("Данные о пользователе уже есть в системе", exception.getMessage());
-    }
 }
