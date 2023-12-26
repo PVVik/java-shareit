@@ -76,6 +76,7 @@ public class BookingServiceTest {
             LocalDateTime.of(2024, 1, 12, 12, 12, 0),
             flour, ilya, Status.WAITING);
 
+
     @Test
     void create_shouldThrowExceptionIfUserIdIsIncorrect() {
         when(userRepository.findById(anyLong()))
