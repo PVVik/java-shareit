@@ -1,27 +1,31 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingForItemDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
-import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.dto.CommentShortDto;
 import ru.practicum.shareit.comment.mapper.CommentMapper;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.comment.repository.CommentRepository;
 import ru.practicum.shareit.enums.Status;
 import ru.practicum.shareit.exception.AccessException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
-import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemShortDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.util.Pagination;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,6 +34,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Service
@@ -81,12 +87,12 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> itemDtoList = new ArrayList<>();
         itemDtoList.add(mapper.toItemDto(thisItem));
         if (thisItem.getOwner().getId().equals(userId)) {
-            List<Long> items = itemDtoList.stream().map(ItemDto::getId).collect(Collectors.toList());
+            List<Long> items = itemDtoList.stream().map(ItemDto::getId).collect(toList());
             getBookingsByItem(itemDtoList, items);
         }
         ItemDto item = itemDtoList.get(0);
         item.setComments(commentRepository.getAllByItemId(itemId).stream().map(commentMapper::toCommentDto)
-                .collect(Collectors.toList()));
+                .collect(toList()));
         return item;
     }
 
@@ -112,33 +118,75 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     @Override
     public void deleteById(Long userId, Long id) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ObjectNotFoundException("Пользователь не найден"));
+        Item item = itemRepository.findById(id).orElseThrow(
+                () -> new ObjectNotFoundException("Товар не найден"));
+        if (!item.getOwner().equals(user)) {
+            throw new AccessException("Пользователь не является владельцем");
+        }
         itemRepository.deleteById(id);
     }
 
     @Override
-    public List<ItemDto> getByUserId(Long id) {
-        List<Item> items = itemRepository.findItemByOwnerId(id);
-        List<ItemDto> itemDtoList = items.stream().map(mapper::toItemDto).collect(Collectors.toList());
-        List<Long> itemsIds = itemDtoList.stream().map(ItemDto::getId).collect(Collectors.toList());
-        getBookingsByItem(itemDtoList, itemsIds);
-        Map<Long, List<CommentDto>> comments = commentRepository
-                .getAllByItemIdIn(itemsIds, Sort.by(DESC, "created"))
-                .stream()
-                .map(commentMapper::toCommentDto)
-                .collect(Collectors.groupingBy(CommentDto::getId));
-        itemDtoList.forEach(i -> i.setComments(comments.get(i.getId())));
-        return itemDtoList;
+    public List<ItemDto> getByUserId(Long userId, Integer offset, Integer limit) {
+        Sort sort = Sort.by(ASC, "id");
+        Page<Item> page;
+        Pageable pageable;
+        List<ItemDto> itemsList = new ArrayList<>();
+        Pagination pagination = new Pagination(offset, limit);
+        if (limit == null) {
+            pageable = PageRequest.of(pagination.getIndex(), pagination.getPageSize(), sort);
+            do {
+                page = itemRepository.findItemByOwnerId(userId, pageable);
+                itemsList.addAll(page.stream().map(mapper::toItemExtendedDto).collect(toList()));
+                pageable = pageable.next();
+            } while (page.hasNext());
+        } else {
+            for (int i = pagination.getIndex(); i < pagination.getTotalPages(); i++) {
+                pageable = PageRequest.of(i, pagination.getPageSize(), sort);
+                page = itemRepository.findItemByOwnerId(userId, pageable);
+                itemsList.addAll(page.stream().map(mapper::toItemExtendedDto).collect(toList()));
+                if (!page.hasNext()) {
+                    break;
+                }
+            }
+            itemsList = itemsList.stream().limit(limit).collect(toList());
+        }
+        return itemsList;
     }
 
     @Override
-    public List<ItemShortDto> search(String text) {
-        Boolean available = true;
-        if (text.isBlank()) {
-            return new ArrayList<>();
+    public List<ItemDto> search(String text, Integer offset, Integer limit) {
+        List<ItemDto> itemsList = new ArrayList<>();
+        if (text != null && !text.isEmpty() && !text.isBlank()) {
+            text = text.toLowerCase();
+            Pageable pageable;
+            Sort sort = Sort.by(ASC, "name");
+            Page<Item> page;
+            Pagination pagination = new Pagination(offset, limit);
+            if (limit == null) {
+                pageable = PageRequest.of(pagination.getIndex(), pagination.getPageSize(), sort);
+                do {
+                    page = itemRepository
+                            .getItemsBySearchQuery(text, pageable);
+                    itemsList.addAll(page.stream().map(mapper::toItemDto).collect(toList()));
+                    pageable = pageable.next();
+                } while (page.hasNext());
+            } else {
+                for (int i = pagination.getIndex(); i < pagination.getTotalPages(); i++) {
+                    pageable = PageRequest.of(i, pagination.getPageSize(), sort);
+                    page = itemRepository
+                            .getItemsBySearchQuery(text, pageable);
+                    itemsList.addAll(page.stream().map(mapper::toItemDto).collect(toList()));
+                    if (!page.hasNext()) {
+                        break;
+                    }
+                }
+                itemsList = itemsList.stream().limit(limit).collect(toList());
+            }
         }
-        return itemRepository
-                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailable(text, text, available)
-                .stream().map(mapper::toItemShortDto).collect(Collectors.toList());
+        return itemsList;
     }
 
     private void getBookingsByItem(List<ItemDto> itemDtoList, List<Long> items) {
@@ -156,5 +204,13 @@ public class ItemServiceImpl implements ItemService {
             item.setLastBooking(lastBookings.get(item.getId()));
             item.setNextBooking(nextBookings.get(item.getId()));
         }
+    }
+
+    @Override
+    public List<ItemDto> getItemsByRequestId(Long requestId) {
+        return itemRepository.getItemsByRequestId(requestId, Sort.by(DESC, "id"))
+                .stream()
+                .map(mapper::toItemDto)
+                .collect(toList());
     }
 }

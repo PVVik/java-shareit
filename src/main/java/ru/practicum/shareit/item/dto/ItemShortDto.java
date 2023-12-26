@@ -19,4 +19,5 @@ public class ItemShortDto {
     private String description;
     @NotNull(message = " Поле статуса доступности не может быть пустым", groups = {Create.class})
     private Boolean available;
+    private Long requestId;
 }
