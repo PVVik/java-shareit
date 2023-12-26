@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import ru.practicum.shareit.exception.ObjectAlreadyExistsException;
 import ru.practicum.shareit.exception.ObjectNotFoundException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
@@ -59,5 +60,14 @@ public class UserRepositoryTest {
         final ObjectNotFoundException exception = assertThrows(
                 ObjectNotFoundException.class, () -> userService.getById(999L));
         assertEquals("Пользователь не найден", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionIfEmailExists() {
+        when(userRepository.save(any()))
+                .thenThrow(new ObjectAlreadyExistsException("Данные о пользователе уже есть в системе"));
+        final ObjectAlreadyExistsException exception = assertThrows(
+                ObjectAlreadyExistsException.class, () -> userService.create(user));
+        assertEquals("Данные о пользователе уже есть в системе", exception.getMessage());
     }
 }
