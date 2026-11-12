@@ -11,7 +11,7 @@ import lombok.ToString;
 @ToString
 public class User {
 
-    private long id;
+    private Long id;
 
     private String email;
 

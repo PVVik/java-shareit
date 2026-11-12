@@ -11,7 +11,7 @@ import lombok.ToString;
 @ToString
 public class Item {
 
-    private long id;
+    private Long id;
 
     private String name;
 
